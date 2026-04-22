@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THENELLA - Gospel Artist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8B4513;
+            --secondary: #DAA520;
+            --accent: #4A6B22;
+            --light: #F8F5F0;
+            --dark: #2C1810;
+            --text: #333333;
+            --text-light: #777777;
+            --white: #FFFFFF;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --api-url: 'http://127.0.0.1:8000';
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 1rem;
+        }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        section { padding: 80px 0; }
+        .section-title { text-align: center; margin-bottom: 50px; position: relative; }
+        .section-title h2 {
+            font-size: 2.5rem; color: var(--dark);
+            display: inline-block; position: relative;
+        }
+        .section-title h2:after {
+            content: ''; position: absolute; width: 70px; height: 3px;
+            background: var(--secondary); bottom: -10px; left: 50%; transform: translateX(-50%);
+        }
+        .btn {
+            display: inline-block; background-color: var(--primary); color: var(--white);
+            padding: 12px 30px; border-radius: 30px; text-decoration: none;
+            font-weight: 500; transition: var(--transition); border: none; cursor: pointer; font-size: 1rem;
+        }
+        .btn:hover { background-color: var(--secondary); color: var(--dark); transform: translateY(-3px); box-shadow: var(--shadow); }
+        .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background-color: var(--primary); color: var(--white); }
+
+        /* ─── Toast Notification ─── */
+        #toast {
+            position: fixed; bottom: 30px; right: 30px; z-index: 9999;
+            padding: 16px 24px; border-radius: 10px; color: #fff;
+            font-size: 0.95rem; box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 350px; display: flex; align-items: center; gap: 12px;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+        #toast.success { background: linear-gradient(135deg, #4A6B22, #5a8029); }
+        #toast.error { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        #toast.loading { background: linear-gradient(135deg, #8B4513, #a0522d); }
+        #toast i { font-size: 1.2rem; }
+
+        /* ─── Loading Skeleton ─── */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .skeleton-card { height: 300px; border-radius: 10px; }
+
+        /* ─── Spinner ─── */
+        .spinner {
+            display: inline-block; width: 20px; height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Header ─── */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background-color: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: var(--transition);
+        }
+        header.scrolled { padding: 10px 0; background-color: rgba(255,255,255,0.98); }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+        .logo span { color: var(--secondary); }
+        .nav-links { display: flex; list-style: none; }
+        .nav-links li { margin-left: 30px; }
+        .nav-links a { color: var(--dark); text-decoration: none; font-weight: 500; transition: var(--transition); position: relative; }
+        .nav-links a:hover { color: var(--primary); }
+        .nav-links a:after { content: ''; position: absolute; width: 0; height: 2px; background: var(--primary); left: 0; bottom: -5px; transition: var(--transition); }
+        .nav-links a:hover:after { width: 100%; }
+        .language-switcher { display: flex; margin-left: 30px; }
+        .lang-btn { background: none; border: none; color: var(--text-light); font-weight: 500; cursor: pointer; padding: 5px 10px; border-radius: 3px; transition: var(--transition); }
+        .lang-btn.active { color: var(--primary); background-color: rgba(139,69,19,0.1); }
+        .hamburger { display: none; cursor: pointer; font-size: 1.5rem; color: var(--primary); }
+
+        /* ─── Hero ─── */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(44,24,16,0.7),rgba(44,24,16,0.7)), url('OIP (1).webp');
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; text-align: center;
+            color: var(--white); position: relative; overflow: hidden;
+        }
+        .hero-content { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        .hero h1 { font-size: 4rem; margin-bottom: 20px; color: var(--white); opacity: 0; transform: translateY(30px); animation: fadeUp 1s forwards 0.5s; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0; transform: translateY(30px); animation: fadeUp 1s forwards 1s; }
+        .hero-btns { opacity: 0; transform: translateY(30px); animation: fadeUp 1s forwards 1.5s; }
+        .hero-btns .btn { margin: 0 10px; }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* ─── Biography ─── */
+        .biography { background-color: var(--white); }
+        .bio-content { display: flex; align-items: center; gap: 50px; }
+        .bio-img { flex: 1; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
+        .bio-img img { width: 100%; height: auto; display: block; transition: var(--transition); }
+        .bio-img:hover img { transform: scale(1.05); }
+        .bio-text { flex: 1; }
+        .bio-text h3 { font-size: 1.8rem; color: var(--primary); margin-bottom: 20px; }
+        .bio-text p { margin-bottom: 20px; color: var(--text-light); }
+
+        /* ─── Achievements ─── */
+        .achievements { background-color: var(--light); }
+        .achievements-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 30px; }
+        .achievement-card { background-color: var(--white); border-radius: 10px; padding: 30px; text-align: center; box-shadow: var(--shadow); transition: var(--transition); }
+        .achievement-card:hover { transform: translateY(-10px); }
+        .achievement-icon { font-size: 2.5rem; color: var(--secondary); margin-bottom: 20px; }
+        .achievement-card h3 { font-size: 1.3rem; color: var(--dark); }
+
+        /* ─── Music / Discographie ─── */
+        .music { background-color: var(--white); }
+        .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 30px; }
+        .music-card { background-color: var(--light); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); }
+        .music-card:hover { transform: translateY(-10px); }
+        .music-img { height: 200px; overflow: hidden; }
+        .music-img img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
+        .music-card:hover .music-img img { transform: scale(1.1); }
+        .music-info { padding: 20px; }
+        .music-info h3 { font-size: 1.3rem; color: var(--dark); }
+        .music-info p { color: var(--text-light); margin-bottom: 15px; }
+        .music-placeholder { background: linear-gradient(135deg, var(--primary), var(--dark)); display: flex; align-items: center; justify-content: center; height: 100%; }
+        .music-placeholder i { font-size: 3rem; color: rgba(255,255,255,0.4); }
+        /* streaming links */
+        .streaming-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .streaming-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: var(--transition); }
+        .streaming-btn.apple { background: #fc3c44; color: #fff; }
+        .streaming-btn.apple:hover { background: #d9323a; transform: translateY(-2px); }
+        .streaming-btn.spotify { background: #1DB954; color: #fff; }
+        .streaming-btn.spotify:hover { background: #17a349; transform: translateY(-2px); }
+
+        /* ─── Media / Gallery ─── */
+        .media { background-color: var(--light); }
+        .media-slider { position: relative; overflow: hidden; border-radius: 10px; box-shadow: var(--shadow); }
+        .slider-container { display: flex; transition: transform 0.5s ease; }
+        .slide { min-width: 100%; position: relative; }
+        .slide img { width: 100%; height: 500px; object-fit: cover; display: block; }
+        .slide-caption { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: var(--white); padding: 20px; }
+        .slider-controls { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; transform: translateY(-50%); }
+        .slider-btn { background-color: rgba(255,255,255,0.8); border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; color: var(--primary); cursor: pointer; transition: var(--transition); }
+        .slider-btn:hover { background-color: var(--white); }
+        .slider-dots { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: var(--transition); }
+        .dot.active { background: var(--white); transform: scale(1.3); }
+
+        /* ─── Accounts ─── */
+        .accounts { background-color: var(--white); }
+        .accounts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 30px; }
+        .account-card { background-color: var(--light); border-radius: 10px; padding: 30px; text-align: center; box-shadow: var(--shadow); transition: var(--transition); }
+        .account-card:hover { transform: translateY(-10px); }
+        .account-icon { font-size: 2.5rem; margin-bottom: 20px; }
+        .youtube .account-icon { color: #FF0000; }
+        .tiktok .account-icon { color: #000; }
+        .facebook .account-icon { color: #1877F2; }
+        .instagram .account-icon { color: #E4405F; }
+        .account-card h3 { font-size: 1.3rem; color: var(--dark); margin-bottom: 15px; }
+        .account-links { list-style: none; }
+        .account-links li { margin-bottom: 10px; }
+        .account-links a { color: var(--primary); text-decoration: none; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .account-links a:hover { color: var(--secondary); }
+        .song-icon { color: var(--secondary); }
+
+        /* ─── Contact ─── */
+        .contact { background-color: var(--light); }
+        .contact-form { max-width: 600px; margin: 0 auto; background-color: var(--white); padding: 40px; border-radius: 10px; box-shadow: var(--shadow); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark); font-weight: 500; }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 5px;
+            font-family: 'Poppins', sans-serif; transition: var(--transition); font-size: 0.95rem;
+            background: #fff;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,69,19,0.1); }
+        .form-group .error-msg { color: #e74c3c; font-size: 0.82rem; margin-top: 4px; display: none; }
+        .form-group.has-error input,
+        .form-group.has-error textarea,
+        .form-group.has-error select { border-color: #e74c3c; }
+        .form-group.has-error .error-msg { display: block; }
+        .submit-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
+
+        /* ─── Footer ─── */
+        footer { background-color: var(--dark); color: var(--white); padding: 60px 0 30px; }
+        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 40px; }
+        .footer-col { flex: 1; min-width: 250px; }
+        .footer-col h3 { font-size: 1.3rem; color: var(--white); margin-bottom: 20px; position: relative; padding-bottom: 10px; }
+        .footer-col h3:after { content: ''; position: absolute; width: 50px; height: 2px; background: var(--secondary); bottom: 0; left: 0; }
+        .footer-col p { color: #bbb; margin-bottom: 20px; }
+        .social-icons { display: flex; gap: 15px; margin-top: 20px; }
+        .social-icons a { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background-color: rgba(255,255,255,0.1); border-radius: 50%; color: var(--white); text-decoration: none; transition: var(--transition); }
+        .social-icons a:hover { background-color: var(--secondary); color: var(--dark); transform: translateY(-5px); }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: #bbb; text-decoration: none; transition: var(--transition); }
+        .footer-links a:hover { color: var(--secondary); padding-left: 5px; }
+        .copyright { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); color: #bbb; font-size: 0.9rem; }
+
+        /* ─── API Status Badge ─── */
+        #api-status {
+            position: fixed; bottom: 30px; left: 30px; z-index: 9998;
+            padding: 8px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        #api-status.online { background: #e8f5e9; color: #2e7d32; }
+        #api-status.offline { background: #fce4ec; color: #c62828; }
+        #api-status .dot-status { width: 8px; height: 8px; border-radius: 50%; }
+        #api-status.online .dot-status { background: #4caf50; animation: pulse 2s infinite; }
+        #api-status.offline .dot-status { background: #ef5350; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 992px) {
+            .bio-content { flex-direction: column; }
+            .bio-img, .bio-text { flex: none; width: 100%; }
+            .hero h1 { font-size: 3rem; }
+        }
+        @media (max-width: 768px) {
+            .hamburger { display: block; }
+            .nav-links { position: fixed; top: 80px; left: 0; width: 100%; background-color: var(--white); flex-direction: column; align-items: center; padding: 20px 0; box-shadow: 0 10px 15px rgba(0,0,0,0.1); transform: translateY(-100%); opacity: 0; transition: var(--transition); z-index: 999; }
+            .nav-links.active { transform: translateY(0); opacity: 1; }
+            .nav-links li { margin: 15px 0; }
+            .language-switcher { margin-left: 0; justify-content: center; margin-top: 20px; }
+            .hero h1 { font-size: 2.5rem; }
+            .section-title h2 { font-size: 2rem; }
+            .slider-btn { width: 40px; height: 40px; font-size: 1rem; }
+            .slide img { height: 400px; }
+            #api-status { display: none; }
+        }
+        @media (max-width: 576px) {
+            .hero h1 { font-size: 2rem; }
+            .hero-btns .btn { display: block; margin: 10px auto; width: 80%; }
+            .slide img { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- API Status Badge -->
+    <div id="api-status" class="offline">
+        <span class="dot-status"></span>
+        <span id="api-status-text">API offline</span>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"><i id="toast-icon"></i><span id="toast-msg"></span></div>
+
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">THEN<span>ELLA</span></a>
+                <div class="hamburger" id="hamburger"><i class="fas fa-bars"></i></div>
+                <ul class="nav-links" id="nav-links">
+                    <li><a href="#home" data-lang-en="Home" data-lang-fr="Accueil">Home</a></li>
+                    <li><a href="#biography" data-lang-en="Biography" data-lang-fr="Biographie">Biography</a></li>
+                    <li><a href="#achievements" data-lang-en="Achievements" data-lang-fr="Réalisations">Achievements</a></li>
+                    <li><a href="#music" data-lang-en="Music" data-lang-fr="Musique">Music</a></li>
+                    <li><a href="#media" data-lang-en="Gallery" data-lang-fr="Galerie">Gallery</a></li>
+                    <li><a href="#accounts" data-lang-en="Accounts" data-lang-fr="Comptes">Accounts</a></li>
+                    <li><a href="#contact" data-lang-en="Contact" data-lang-fr="Contact">Contact</a></li>
+                    <div class="language-switcher">
+                        <button class="lang-btn active" id="lang-en">EN</button>
+                        <button class="lang-btn" id="lang-fr">FR</button>
+                    </div>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 data-lang-en="THENELLA" data-lang-fr="THENELLA">THENELLA</h1>
+            <p data-lang-en="Cameroonian Gospel Artist · Evangelist · Worship Leader" data-lang-fr="Artiste Gospel Camerounaise · Évangéliste · Leader de Louange">Cameroonian Gospel Artist · Evangelist · Worship Leader</p>
+            <p data-lang-en="Ministering through music that transforms hearts and glorifies God" data-lang-fr="Ministère par la musique qui transforme les cœurs et glorifie Dieu">Ministering through music that transforms hearts and glorifies God</p>
+            <div class="hero-btns">
+                <a href="#music" class="btn" data-lang-en="Listen to Music" data-lang-fr="Écouter la Musique">Listen to Music</a>
+                <a href="#contact" class="btn btn-outline" data-lang-en="Book for Ministry" data-lang-fr="Réserver pour le Ministère">Book for Ministry</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="biography" id="biography">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-lang-en="Her Story" data-lang-fr="Son Histoire">Her Story</h2>
+            </div>
+            <div class="bio-content">
+                <div class="bio-img">
+                    <img src="OIP.webp" alt="THENELLA">
+                </div>
+                <div class="bio-text">
+                    <h3 data-lang-en="Bonog Thérèse Ornella" data-lang-fr="Bonog Thérèse Ornella">Bonog Thérèse Ornella</h3>
+                    <p data-lang-en="Thenella, born Bonog Thérèse Ornella, is a Cameroonian gospel singer, songwriter, worship leader, and evangelist. Her spiritual journey began in a Christian family where her father's miraculous healing experience profoundly shaped her faith." data-lang-fr="Thenella, née Bonog Thérèse Ornella, est une chanteuse de gospel, auteure-compositrice, leader de louange et évangéliste camerounaise. Son parcours spirituel a commencé dans une famille chrétienne où l'expérience de guérison miraculeuse de son père a profondément façonné sa foi.">
+                        Thenella, born Bonog Thérèse Ornella, is a Cameroonian gospel singer, songwriter, worship leader, and evangelist. Her spiritual journey began in a Christian family where her father's miraculous healing experience profoundly shaped her faith.
+                    </p>
+                    <p data-lang-en="For years, she served as lead vocalist and choir director at various churches, working with gospel groups like No Greater Love Family and Divine Harmonie. In September 2017, she was ordained as an evangelist." data-lang-fr="Pendant des années, elle a servi comme vocaliste principale et directrice de chœur dans diverses églises. En septembre 2017, elle a été ordonnée évangéliste.">
+                        For years, she served as lead vocalist and choir director at various churches, working with gospel groups like No Greater Love Family and Divine Harmonie. In September 2017, she was ordained as an evangelist.
+                    </p>
+                    <p data-lang-en="Married to Dr. Philippe Totto Ndong, Thenella continues to minister through her music and gospel outreach from Douala, Cameroon." data-lang-fr="Mariée au Dr. Philippe Totto Ndong, Thenella continue à exercer son ministère depuis Douala, Cameroun.">
+                        Married to Dr. Philippe Totto Ndong, Thenella continues to minister through her music and gospel outreach from Douala, Cameroon.
+                    </p>
+                    <a href="#achievements" class="btn" data-lang-en="See Her Achievements" data-lang-fr="Voir Ses Réalisations">See Her Achievements</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="achievements" id="achievements">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-lang-en="Achievements & Awards" data-lang-fr="Réalisations & Récompenses">Achievements & Awards</h2>
+            </div>
+            <div class="achievements-grid">
+                <div class="achievement-card">
+                    <div class="achievement-icon"><i class="fas fa-trophy"></i></div>
+                    <h3 data-lang-en="Revelation of the Year" data-lang-fr="Révélation de l'Année">Revelation of the Year</h3>
+                    <p data-lang-en="Zamba Awards after the release of 'Cœur Nouveau' album" data-lang-fr="Zamba Awards après la sortie de l'album 'Cœur Nouveau'">Zamba Awards after the release of 'Cœur Nouveau' album</p>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-icon"><i class="fas fa-music"></i></div>
+                    <h3 data-lang-en="Breakthrough Album" data-lang-fr="Album Révélation">Breakthrough Album</h3>
+                    <p data-lang-en="'Cœur Nouveau' (2019) with 10 inspirational tracks" data-lang-fr="'Cœur Nouveau' (2019) avec 10 titres inspirants">'Cœur Nouveau' (2019) with 10 inspirational tracks</p>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-icon"><i class="fas fa-hands-praying"></i></div>
+                    <h3 data-lang-en="Ordained Evangelist" data-lang-fr="Évangéliste Ordonnée">Ordained Evangelist</h3>
+                    <p data-lang-en="Officially ordained in September 2017 for ministry work" data-lang-fr="Ordonnée officiellement en septembre 2017 pour le travail ministériel">Officially ordained in September 2017 for ministry work</p>
+                </div>
+                <div class="achievement-card">
+                    <div class="achievement-icon"><i class="fas fa-record-vinyl"></i></div>
+                    <h3 data-lang-en="Multiple Albums" data-lang-fr="Plusieurs Albums">Multiple Albums</h3>
+                    <p data-lang-en="Released several successful albums and singles since 2017" data-lang-fr="Plusieurs albums et singles à succès depuis 2017">Released several successful albums and singles since 2017</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ MUSIC — Dynamic from API ═══ -->
+    <section class="music" id="music">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-lang-en="Discography" data-lang-fr="Discographie">Discography</h2>
+            </div>
+            <!-- Albums chargés dynamiquement -->
+            <div class="music-grid" id="music-grid">
+                <!-- Skeleton loaders -->
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ GALLERY — Dynamic from API ═══ -->
+    <section class="media" id="media">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-lang-en="Gallery" data-lang-fr="Galerie">Gallery</h2>
+            </div>
+            <div class="media-slider">
+                <div class="slider-container" id="slider-container">
+                    <!-- Slides chargés dynamiquement (fallback statique ci-dessous) -->
+                    <div class="slide">
+                        <img src="OIP.webp" alt="THENELLA Ministry">
+                        <div class="slide-caption">
+                            <h3 data-lang-en="Ministry & Worship" data-lang-fr="Ministère & Adoration">Ministry & Worship</h3>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <img src="download.webp" alt="Live Performance">
+                        <div class="slide-caption">
+                            <h3 data-lang-en="Live Gospel Performances" data-lang-fr="Performances Gospel en Direct">Live Gospel Performances</h3>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <img src="OIP (5).webp" alt="Recording Studio">
+                        <div class="slide-caption">
+                            <h3 data-lang-en="Music Creation Process" data-lang-fr="Processus de Création Musicale">Music Creation Process</h3>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <img src="OIP (4).webp" alt="Community Outreach">
+                        <div class="slide-caption">
+                            <h3 data-lang-en="Community Outreach & Evangelism" data-lang-fr="Action Communautaire & Évangélisation">Community Outreach & Evangelism</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="slider-controls">
+                    <button class="slider-btn" id="prev-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-btn" id="next-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="slider-dots" id="slider-dots"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="accounts" id="accounts">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-lang-en="Social Media & Music" data-lang-fr="Réseaux Sociaux & Musique">Social Media & Music</h2>
+            </div>
+            <div class="accounts-grid">
+                <div class="account-card youtube">
+                    <div class="account-icon"><i class="fab fa-youtube"></i></div>
+                    <h3>YouTube</h3>
+                    <p data-lang-en="Official music videos and worship sessions" data-lang-fr="Vidéos musicales officielles et sessions de louange">Official music videos and worship sessions</p>
+                    <ul class="account-links">
+                        <li><a href="https://www.youtube.com/results?search_query=Thenella+Officiel" target="_blank"><i class="fas fa-play-circle song-icon"></i> Ouvrier de la Moisson</a></li>
+                        <li><a href="https://www.youtube.com/results?search_query=Thenella+Officiel" target="_blank"><i class="fas fa-play-circle song-icon"></i> Seigneur Mon Roi</a></li>
+                        <li><a href="https://www.youtube.com/results?search_query=Thenella+Officiel" target="_blank"><i class="fas fa-play-circle song-icon"></i> La Gloire de l'Éternel</a></li>
+                    </ul>
+                </div>
+                <div class="account-card tiktok">
+                    <div class="account-icon"><i class="fab fa-tiktok"></i></div>
+                    <h3>TikTok</h3>
+                    <p data-lang-en="Short videos, behind the scenes, and worship clips" data-lang-fr="Vidéos courtes, coulisses et clips de louange">Short videos, behind the scenes, and worship clips</p>
+                    <ul class="account-links">
+                        <li><a href="https://www.tiktok.com/search?q=thenella%20gospel" target="_blank"><i class="fas fa-video song-icon"></i> <span data-lang-en="Worship Moments" data-lang-fr="Moments de Louange">Worship Moments</span></a></li>
+                        <li><a href="https://www.tiktok.com/search?q=thenella%20gospel" target="_blank"><i class="fas fa-video song-icon"></i> <span data-lang-en="Ministry Updates" data-lang-fr="Mises à Jour du Ministère">Ministry Updates</span></a></li>
+                        <li><a href="https://www.tiktok.com/search?q=thenella%20gospel" target="_blank"><i class="fas fa-video song-icon"></i> <span data-lang-en="Daily Inspiration" data-lang-fr="Inspiration Quotidienne">Daily Inspiration</span></a></li>
+                    </ul>
+                </div>
+                <div class="account-card facebook">
+                    <div class="account-icon"><i class="fab fa-facebook"></i></div>
+                    <h3>Facebook</h3>
+                    <p data-lang-en="Thenella Ministries official page for updates and events" data-lang-fr="Page officielle pour mises à jour et événements">Thenella Ministries official page for updates and events</p>
+                    <ul class="account-links">
+                        <li><a href="https://www.facebook.com/search/top?q=thenella%20gospel" target="_blank"><i class="fas fa-newspaper song-icon"></i> <span data-lang-en="Ministry Publications" data-lang-fr="Publications du Ministère">Ministry Publications</span></a></li>
+                        <li><a href="https://www.facebook.com/search/top?q=thenella%20gospel" target="_blank"><i class="fas fa-users song-icon"></i> <span data-lang-en="Community Events" data-lang-fr="Événements Communautaires">Community Events</span></a></li>
+                        <li><a href="https://www.facebook.com/search/top?q=thenella%20gospel" target="_blank"><i class="fas fa-calendar-alt song-icon"></i> <span data-lang-en="Concert Announcements" data-lang-fr="Annonces de Concerts">Concert Announcements</span></a></li>
+                    </ul>
+                </div>
+                <div class="account-card instagram">
+                    <div class="account-icon"><i class="fab fa-instagram"></i></div>
+                    <h3>Instagram</h3>
+                    <p data-lang-en="Personal ministry moments and inspirational posts" data-lang-fr="Moments personnels du ministère et publications inspirantes">Personal ministry moments and inspirational posts</p>
+                    <ul class="account-links">
+                        <li><a href="https://www.instagram.com/explore/tags/thenella/" target="_blank"><i class="fas fa-hashtag song-icon"></i> #ThenellaMinistries</a></li>
+                        <li><a href="https://www.instagram.com/explore/tags/thenella/" target="_blank"><i class="fas fa-hashtag song-icon"></i> #CameroonianGospel</a></li>
+                        <li><a href="https://www.instagram.com/explore/tags/thenella/" target="_blank"><i class="fas fa-hashtag song-icon"></i> #WorshipWithThenella</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CONTACT — Connecté à l'API ═══ -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2 data-lang-en="Contact & Booking" data-lang-fr="Contact & Réservation">Contact & Booking</h2>
+            </div>
+            <div class="contact-form">
+                <form id="booking-form" novalidate>
+                    <div class="form-group" id="group-name">
+                        <label for="name" data-lang-en="Full Name" data-lang-fr="Nom Complet">Full Name</label>
+                        <input type="text" id="name" placeholder="John Doe" required>
+                        <span class="error-msg" data-lang-en="Please enter your full name" data-lang-fr="Veuillez entrer votre nom complet">Please enter your full name</span>
+                    </div>
+                    <div class="form-group" id="group-email">
+                        <label for="email" data-lang-en="Email Address" data-lang-fr="Adresse Email">Email Address</label>
+                        <input type="email" id="email" placeholder="you@example.com" required>
+                        <span class="error-msg" data-lang-en="Please enter a valid email" data-lang-fr="Veuillez entrer un email valide">Please enter a valid email</span>
+                    </div>
+                    <div class="form-group" id="group-phone">
+                        <label for="phone" data-lang-en="Phone Number" data-lang-fr="Numéro de Téléphone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="+237 6XX XXX XXX">
+                    </div>
+                    <div class="form-group" id="group-event">
+                        <label for="event-type" data-lang-en="Type of Event" data-lang-fr="Type d'Événement">Type of Event</label>
+                        <select id="event-type" required>
+                            <option value="" data-lang-en="Select an option" data-lang-fr="Sélectionnez une option">Select an option</option>
+                            <option value="concert" data-lang-en="Concert" data-lang-fr="Concert">Concert</option>
+                            <option value="church-service" data-lang-en="Church Service" data-lang-fr="Culte d'Église">Church Service</option>
+                            <option value="conference" data-lang-en="Conference" data-lang-fr="Conférence">Conference</option>
+                            <option value="wedding" data-lang-en="Wedding" data-lang-fr="Mariage">Wedding</option>
+                            <option value="other" data-lang-en="Other" data-lang-fr="Autre">Other</option>
+                        </select>
+                        <span class="error-msg" data-lang-en="Please select an event type" data-lang-fr="Veuillez sélectionner un type d'événement">Please select an event type</span>
+                    </div>
+                    <div class="form-group" id="group-message">
+                        <label for="message" data-lang-en="Message" data-lang-fr="Message">Message</label>
+                        <textarea id="message" rows="5" placeholder="Tell us about your event..."></textarea>
+                    </div>
+                    <button type="submit" class="btn submit-btn" id="submit-btn">
+                        <span id="submit-text" data-lang-en="Send Booking Request" data-lang-fr="Envoyer la Demande">Send Booking Request</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h3 data-lang-en="THENELLA Ministries" data-lang-fr="Ministères THENELLA">THENELLA Ministries</h3>
+                    <p data-lang-en="Spreading the gospel through music, worship, and evangelism. Based in Douala, Cameroon." data-lang-fr="Diffuser l'évangile par la musique, la louange et l'évangélisation. Basé à Douala, Cameroun.">Spreading the gospel through music, worship, and evangelism. Based in Douala, Cameroon.</p>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/search/top?q=thenella%20gospel" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/explore/tags/thenella/" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.youtube.com/results?search_query=Thenella+Officiel" target="_blank"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.tiktok.com/search?q=thenella%20gospel" target="_blank"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h3 data-lang-en="Quick Links" data-lang-fr="Liens Rapides">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home" data-lang-en="Home" data-lang-fr="Accueil">Home</a></li>
+                        <li><a href="#biography" data-lang-en="Biography" data-lang-fr="Biographie">Biography</a></li>
+                        <li><a href="#music" data-lang-en="Music" data-lang-fr="Musique">Music</a></li>
+                        <li><a href="#contact" data-lang-en="Contact" data-lang-fr="Contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3 data-lang-en="Contact Info" data-lang-fr="Informations de Contact">Contact Info</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> <span data-lang-en="Douala, Cameroon" data-lang-fr="Douala, Cameroun">Douala, Cameroon</span></li>
+                        <li><i class="fas fa-envelope"></i> contact@thenellaministries.com</li>
+                        <li><i class="fas fa-phone"></i> +237 XXX XXX XXX</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p data-lang-en="© 2024 THENELLA Ministries. All rights reserved. | Designed with ❤️ for gospel music lovers" data-lang-fr="© 2024 Ministères THENELLA. Tous droits réservés. | Conçu avec ❤️ pour les amateurs de musique gospel">© 2024 THENELLA Ministries. All rights reserved. | Designed with ❤️ for gospel music lovers</p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+// ════════════════════════════════════════════════
+//  CONFIG — Change this to your Laravel URL
+// ════════════════════════════════════════════════
+const API_BASE = 'http://127.0.0.1:8000/';
+
+// ════════════════════════════════════════════════
+//  TOAST SYSTEM
+// ════════════════════════════════════════════════
+let toastTimeout;
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon  = document.getElementById('toast-icon');
+    const text  = document.getElementById('toast-msg');
+
+    const icons = { success: 'fa-check-circle', error: 'fa-times-circle', loading: 'fa-circle-notch fa-spin' };
+    icon.className = `fas ${icons[type] || icons.success}`;
+    text.textContent = msg;
+    toast.className = `show ${type}`;
+
+    clearTimeout(toastTimeout);
+    if (type !== 'loading') {
+        toastTimeout = setTimeout(() => { toast.className = toast.className.replace(' show', ''); }, 5000);
+    }
+}
+function hideToast() {
+    const toast = document.getElementById('toast');
+    toast.className = toast.className.replace(' show', '');
+}
+
+// ════════════════════════════════════════════════
+//  API STATUS CHECK
+// ════════════════════════════════════════════════
+async function checkApiStatus() {
+    const badge = document.getElementById('api-status');
+    const txt   = document.getElementById('api-status-text');
+    try {
+        const res = await fetch(`${API_BASE}/albums`, { method: 'GET', signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+            badge.className = 'online';
+            txt.textContent = 'API online';
+        } else throw new Error();
+    } catch {
+        badge.className = 'offline';
+        txt.textContent = 'API offline';
+    }
+}
+
+// ════════════════════════════════════════════════
+//  LOAD ALBUMS FROM API
+// ════════════════════════════════════════════════
+async function loadAlbums() {
+    const grid = document.getElementById('music-grid');
+    try {
+        const res  = await fetch(`${API_BASE}/albums`);
+        const data = await res.json();
+
+        if (!data.success || !data.data.length) throw new Error('No albums');
+
+        grid.innerHTML = data.data.map(album => `
+            <div class="music-card">
+                <div class="music-img">
+                    ${album.cover_image
+                        ? `<img src="${album.cover_image}" alt="${album.title}" loading="lazy">`
+                        : `<div class="music-placeholder"><i class="fas fa-music"></i></div>`
+                    }
+                </div>
+                <div class="music-info">
+                    <h3>${album.title} (${album.year})</h3>
+                    <p class="album-desc" data-en="${album.description_en || ''}" data-fr="${album.description_fr || ''}">
+                        ${currentLang === 'fr' ? (album.description_fr || album.description_en) : (album.description_en || album.description_fr)}
+                    </p>
+                    <div class="streaming-links">
+                        ${album.apple_music_url ? `<a href="${album.apple_music_url}" target="_blank" class="streaming-btn apple"><i class="fab fa-apple"></i> Apple Music</a>` : ''}
+                        ${album.spotify_url     ? `<a href="${album.spotify_url}" target="_blank" class="streaming-btn spotify"><i class="fab fa-spotify"></i> Spotify</a>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch {
+        // Fallback statique si l'API est offline
+        grid.innerHTML = `
+            <div class="music-card">
+                <div class="music-img"><div class="music-placeholder"><i class="fas fa-music"></i></div></div>
+                <div class="music-info">
+                    <h3>Cœur Nouveau (2019)</h3>
+                    <p class="album-desc" data-en="Breakthrough album with 10 tracks of spiritual transformation" data-fr="Album révélation avec 10 titres de transformation spirituelle">Breakthrough album with 10 tracks of spiritual transformation</p>
+                    <div class="streaming-links">
+                        <a href="https://music.apple.com/us/album/c%C5%93ur-nouveau/1454733587" target="_blank" class="streaming-btn apple"><i class="fab fa-apple"></i> Apple Music</a>
+                    </div>
+                </div>
+            </div>
+            <div class="music-card">
+                <div class="music-img"><div class="music-placeholder"><i class="fas fa-music"></i></div></div>
+                <div class="music-info">
+                    <h3>Une Autre Dimension (2024)</h3>
+                    <p class="album-desc" data-en="Latest album capturing praise, worship, and testimony themes" data-fr="Dernier album capturant des thèmes de louange, d'adoration et de témoignage">Latest album capturing praise, worship, and testimony themes</p>
+                    <div class="streaming-links">
+                        <a href="https://music.apple.com/sn/album/une-autre-dimension/1786566551" target="_blank" class="streaming-btn apple"><i class="fab fa-apple"></i> Apple Music</a>
+                    </div>
+                </div>
+            </div>
+            <div class="music-card">
+                <div class="music-img"><div class="music-placeholder"><i class="fas fa-music"></i></div></div>
+                <div class="music-info">
+                    <h3>Je te bénirai (Live) (2024)</h3>
+                    <p class="album-desc" data-en="Live single reflecting grateful worship and praise" data-fr="Single en direct reflétant une adoration et une louange reconnaissantes">Live single reflecting grateful worship and praise</p>
+                    <div class="streaming-links">
+                        <a href="https://music.apple.com/gb/album/je-te-b%C3%A9nirai-live-single/1755108856" target="_blank" class="streaming-btn apple"><i class="fab fa-apple"></i> Apple Music</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ════════════════════════════════════════════════
+//  LOAD GALLERY FROM API
+// ════════════════════════════════════════════════
+async function loadGallery() {
+    try {
+        const res  = await fetch(`${API_BASE}/gallery`);
+        const data = await res.json();
+
+        if (!data.success || !data.data.length) throw new Error('No images');
+
+        const container = document.getElementById('slider-container');
+        container.innerHTML = data.data.map(img => `
+            <div class="slide">
+                <img src="${img.url}" alt="${img.caption_en || 'Gallery'}" loading="lazy">
+                <div class="slide-caption">
+                    <h3 class="slide-caption-text" data-en="${img.caption_en || ''}" data-fr="${img.caption_fr || ''}">
+                        ${currentLang === 'fr' ? (img.caption_fr || img.caption_en) : (img.caption_en || img.caption_fr)}
+                    </h3>
+                </div>
+            </div>
+        `).join('');
+
+        initSlider();
+    } catch {
+        // Garde le contenu statique déjà dans le HTML
+        initSlider();
+    }
+}
+
+// ════════════════════════════════════════════════
+//  SLIDER
+// ════════════════════════════════════════════════
+let currentSlide = 0;
+let sliderInterval;
+
+function initSlider() {
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('slider-dots');
+
+    dotsContainer.innerHTML = Array.from(slides).map((_, i) =>
+        `<span class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></span>`
+    ).join('');
+
+    startAutoSlide(slides.length);
+}
+
+function updateSlider() {
+    const slides = document.querySelectorAll('.slide');
+    const dots   = document.querySelectorAll('.dot');
+    document.getElementById('slider-container').style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
+
+function goToSlide(n) {
+    currentSlide = n;
+    updateSlider();
+    resetAutoSlide();
+}
+
+function startAutoSlide(total) {
+    sliderInterval = setInterval(() => {
+        currentSlide = (currentSlide + 1) % total;
+        updateSlider();
+    }, 5000);
+}
+
+function resetAutoSlide() {
+    clearInterval(sliderInterval);
+    const slides = document.querySelectorAll('.slide');
+    startAutoSlide(slides.length);
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+    const total = document.querySelectorAll('.slide').length;
+    currentSlide = (currentSlide + 1) % total;
+    updateSlider(); resetAutoSlide();
+});
+document.getElementById('prev-btn').addEventListener('click', () => {
+    const total = document.querySelectorAll('.slide').length;
+    currentSlide = (currentSlide - 1 + total) % total;
+    updateSlider(); resetAutoSlide();
+});
+
+// ════════════════════════════════════════════════
+//  FORM VALIDATION + SUBMIT API
+// ════════════════════════════════════════════════
+function clearFormErrors() {
+    document.querySelectorAll('.form-group.has-error').forEach(g => g.classList.remove('has-error'));
+}
+
+function setError(groupId) {
+    document.getElementById(groupId).classList.add('has-error');
+}
+
+function validateForm() {
+    let valid = true;
+    clearFormErrors();
+
+    const name  = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const event = document.getElementById('event-type').value;
+
+    if (!name)  { setError('group-name');  valid = false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('group-email'); valid = false; }
+    if (!event) { setError('group-event'); valid = false; }
+
+    return valid;
+}
+
+document.getElementById('booking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    const btn     = document.getElementById('submit-btn');
+    const btnText = document.getElementById('submit-text');
+
+    // UI loading state
+    btn.disabled  = true;
+    btnText.innerHTML = `<span class="spinner"></span>`;
+    showToast(currentLang === 'fr' ? 'Envoi en cours...' : 'Sending request...', 'loading');
+
+    const payload = {
+        name:       document.getElementById('name').value.trim(),
+        email:      document.getElementById('email').value.trim(),
+        phone:      document.getElementById('phone').value.trim() || null,
+        event_type: document.getElementById('event-type').value,
+        message:    document.getElementById('message').value.trim() || null,
+    };
+
+    try {
+        const res  = await fetch(`${API_BASE}/bookings`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body:    JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            hideToast();
+            showToast(
+                currentLang === 'fr'
+                    ? `Merci ${payload.name} ! Votre demande a été envoyée. Vérifiez votre email.`
+                    : `Thank you ${payload.name}! Request sent. Check your email.`,
+                'success'
+            );
+            document.getElementById('booking-form').reset();
+        } else {
+            // Afficher les erreurs de validation Laravel
+            const firstError = data.errors ? Object.values(data.errors)[0][0] : 'An error occurred.';
+            showToast(firstError, 'error');
+
+            // Mapper les erreurs aux champs
+            if (data.errors) {
+                if (data.errors.name)       setError('group-name');
+                if (data.errors.email)      setError('group-email');
+                if (data.errors.event_type) setError('group-event');
+            }
+        }
+    } catch {
+        showToast(
+            currentLang === 'fr'
+                ? 'Erreur réseau. Vérifiez votre connexion ou réessayez.'
+                : 'Network error. Check your connection or try again.',
+            'error'
+        );
+    } finally {
+        btn.disabled = false;
+        btnText.textContent = currentLang === 'fr' ? 'Envoyer la Demande' : 'Send Booking Request';
+    }
+});
+
+// ════════════════════════════════════════════════
+//  LANGUAGE SWITCHING
+// ════════════════════════════════════════════════
+let currentLang = 'en';
+
+function switchLanguage(lang) {
+    currentLang = lang;
+
+    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+    document.getElementById('lang-fr').classList.toggle('active', lang === 'fr');
+
+    document.querySelectorAll('[data-lang-en]').forEach(el => {
+        const val = lang === 'en' ? el.getAttribute('data-lang-en') : el.getAttribute('data-lang-fr');
+        if (!val) return;
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = val;
+        else el.textContent = val;
+    });
+
+    document.querySelectorAll('option[data-lang-en]').forEach(opt => {
+        opt.textContent = lang === 'en' ? opt.getAttribute('data-lang-en') : opt.getAttribute('data-lang-fr');
+    });
+
+    // Mettre à jour les descriptions d'albums chargées dynamiquement
+    document.querySelectorAll('.album-desc').forEach(p => {
+        p.textContent = lang === 'fr' ? (p.dataset.fr || p.dataset.en) : (p.dataset.en || p.dataset.fr);
+    });
+
+    // Mettre à jour les captions de la galerie
+    document.querySelectorAll('.slide-caption-text').forEach(h => {
+        h.textContent = lang === 'fr' ? (h.dataset.fr || h.dataset.en) : (h.dataset.en || h.dataset.fr);
+    });
+}
+
+document.getElementById('lang-en').addEventListener('click', () => switchLanguage('en'));
+document.getElementById('lang-fr').addEventListener('click', () => switchLanguage('fr'));
+
+// ════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════
+const header    = document.getElementById('header');
+const hamburger = document.getElementById('hamburger');
+const navLinks  = document.getElementById('nav-links');
+
+window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 100);
+});
+
+hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    hamburger.innerHTML = navLinks.classList.contains('active')
+        ? '<i class="fas fa-times"></i>'
+        : '<i class="fas fa-bars"></i>';
+});
+
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        hamburger.innerHTML = '<i class="fas fa-bars"></i>';
+    });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+    });
+});
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    switchLanguage('en');
+    checkApiStatus();
+    loadAlbums();
+    loadGallery();
+
+    // Re-check API status toutes les 30 secondes
+    setInterval(checkApiStatus, 30000);
+});
+</script>
+</body>
+</html>
