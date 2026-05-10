@@ -1,53 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Thenella Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Un backend Laravel moderne pour la gestion de réservations, albums et images de galerie, avec un panneau d'administration Filament.
 
-## About Laravel
+## Description
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Thenella Backend est une application web développée avec Laravel, conçue pour gérer les réservations, les albums photo et les images de galerie. Elle inclut un système d'email pour les notifications de réservation et un panneau d'administration intuitif grâce à Filament.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Fonctionnalités principales
+- **Gestion des utilisateurs** : Modèle User avec authentification.
+- **Système de réservations** : Création, gestion et notifications par email (confirmation et admin).
+- **Gestion des albums** : Organisation des albums photo.
+- **Galerie d'images** : Upload et gestion des images associées aux albums.
+- **Panneau d'administration** : Interface Filament pour une gestion facile des ressources.
+- **API REST** : Routes API pour l'intégration avec des frontends ou applications mobiles.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Technologies utilisées
+- **Laravel** : Framework PHP pour le backend.
+- **Filament** : Package pour le panneau d'administration.
+- **MySQL/PostgreSQL** : Base de données (configurable).
+- **Mail** : Envoi d'emails via Laravel Mail.
+- **Vite** : Pour la compilation des assets (si nécessaire).
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Prérequis
+- PHP 8.1 ou supérieur
+- Composer
+- Node.js et npm (pour les assets)
+- Base de données (MySQL, PostgreSQL, etc.)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Étapes d'installation
+1. **Clonez le dépôt** :
+   ```bash
+   git clone <url-du-depot>
+   cd thenella-backend
+   ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. **Installez les dépendances PHP** :
+   ```bash
+   composer install
+   ```
 
-## Laravel Sponsors
+3. **Installez les dépendances JavaScript** :
+   ```bash
+   npm install
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+4. **Configurez l'environnement** :
+   - Copiez le fichier `.env.example` vers `.env` :
+     ```bash
+     cp .env.example .env
+     ```
+   - Éditez `.env` pour configurer la base de données, le mail, etc.
 
-### Premium Partners
+5. **Générez la clé d'application** :
+   ```bash
+   php artisan key:generate
+   ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+6. **Exécutez les migrations** :
+   ```bash
+   php artisan migrate
+   ```
+
+7. **Seedez la base de données (optionnel)** :
+   ```bash
+   php artisan db:seed
+   ```
+
+8. **Compilez les assets** :
+   ```bash
+   npm run build
+   ```
+
+9. **Démarrez le serveur** :
+   ```bash
+   php artisan serve
+   ```
+
+L'application sera accessible sur `http://localhost:8000`.
+
+## Utilisation
+
+### Panneau d'administration
+Accédez au panneau Filament via `/admin` (ou configurez la route dans `AdminPanelProvider.php`).
+
+### API
+Les routes API sont définies dans `routes/api.php`. Exemples :
+- `GET /api/bookings` : Liste des réservations.
+- `POST /api/bookings` : Créer une réservation.
+
+Utilisez des outils comme Postman pour tester les API.
+
+### Tests
+Exécutez les tests avec :
+```bash
+php artisan test
+```
+
+## Structure du projet
+- `app/Models/` : Modèles Eloquent (User, Booking, Album, GalleryImage).
+- `app/Http/Controllers/` : Contrôleurs pour la logique métier.
+- `app/Mail/` : Classes pour les emails.
+- `database/migrations/` : Migrations de base de données.
+- `resources/views/` : Vues Blade (si utilisées).
+- `routes/` : Définition des routes web et API.
+
+## Contribution
+1. Forkez le projet.
+2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/nouvelle-fonction`).
+3. Commitez vos changements (`git commit -am 'Ajoute nouvelle fonctionnalité'`).
+4. Pushez vers la branche (`git push origin feature/nouvelle-fonction`).
+5. Ouvrez une Pull Request.
+
+## Licence
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## Support
+Pour des questions ou des problèmes, ouvrez une issue sur GitHub ou contactez l'équipe de développement.
 
 ## Contributing
 
