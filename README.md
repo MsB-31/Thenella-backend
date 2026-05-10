@@ -4,7 +4,7 @@ Un backend Laravel moderne pour la gestion de réservations, albums et images de
 
 ## Description
 
-Thenella Backend est une application web développée avec Laravel, conçue pour gérer les réservations, les albums photo et les images de galerie. Elle inclut un système d'email pour les notifications de réservation et un panneau d'administration intuitif grâce à Filament.
+Thenella Backend est une application web développée avec Laravel, conçue pour gérer efficacement les réservations, les albums photo et les images de galerie. Elle offre un panneau d'administration intuitif via Filament, un système d'emails pour les notifications de réservation, et une API RESTful pour l'intégration. Avec une architecture modulaire, des migrations sécurisées et une gestion optimisée des utilisateurs, elle assure performance, sécurité et évolutivité pour les professionnels de la photographie et des événements.
 
 ### Fonctionnalités principales
 - **Gestion des utilisateurs** : Modèle User avec authentification.
