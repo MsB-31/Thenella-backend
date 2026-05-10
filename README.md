@@ -2,37 +2,51 @@
 
 Un backend Laravel moderne pour la gestion de réservations, albums et images de galerie, avec un panneau d'administration Filament.
 
-## Description
+## Description générale du projet
 
-Thenella Backend est une application web développée avec Laravel, conçue pour gérer efficacement les réservations, les albums photo et les images de galerie. Elle offre un panneau d'administration intuitif via Filament, un système d'emails pour les notifications de réservation, et une API RESTful pour l'intégration. Avec une architecture modulaire, des migrations sécurisées et une gestion optimisée des utilisateurs, elle assure performance, sécurité et évolutivité pour les professionnels de la photographie et des événements.
-
-### Fonctionnalités principales
-- **Gestion des utilisateurs** : Modèle User avec authentification.
-- **Système de réservations** : Création, gestion et notifications par email (confirmation et admin).
-- **Gestion des albums** : Organisation des albums photo.
-- **Galerie d'images** : Upload et gestion des images associées aux albums.
-- **Panneau d'administration** : Interface Filament pour une gestion facile des ressources.
-- **API REST** : Routes API pour l'intégration avec des frontends ou applications mobiles.
+Thenella Backend est une application backend robuste et évolutive développée pour répondre aux besoins des professionnels de la photographie et des événements. Elle offre une plateforme centralisée pour la gestion des réservations, des albums photographiques et des galeries d'images, facilitant l'organisation et la présentation du travail créatif. Conçue avec une architecture modulaire et sécurisée, elle assure une performance optimale et une intégration facile avec des interfaces utilisateur ou des applications mobiles. Le projet vise à simplifier les workflows administratifs tout en offrant une expérience utilisateur fluide et professionnelle.
 
 ## Technologies utilisées
-- **Laravel** : Framework PHP pour le backend.
-- **Filament** : Package pour le panneau d'administration.
-- **MySQL/PostgreSQL** : Base de données (configurable).
-- **Mail** : Envoi d'emails via Laravel Mail.
-- **Vite** : Pour la compilation des assets (si nécessaire).
+
+Ce projet repose sur un stack technologique moderne et éprouvé pour garantir fiabilité, sécurité et maintenabilité :
+
+- **Laravel 11** : Framework PHP principal pour le développement backend, offrant une architecture MVC, des migrations de base de données, et des outils intégrés pour l'authentification, le cache et les files d'attente.
+- **Filament 3** : Package PHP pour créer des panneaux d'administration intuitifs et personnalisables, basé sur Livewire et Alpine.js.
+- **PHP 8.1+** : Langage de programmation serveur avec support des dernières fonctionnalités pour une performance accrue.
+- **Composer** : Gestionnaire de dépendances PHP pour l'installation et la gestion des packages.
+- **MySQL / PostgreSQL** : Systèmes de gestion de base de données relationnelle pour le stockage persistant des données (réservations, utilisateurs, albums, images).
+- **Eloquent ORM** : Mapper objet-relationnel intégré à Laravel pour une interaction simplifiée avec la base de données.
+- **Laravel Mail** : Système d'envoi d'emails intégré pour les notifications (confirmations de réservation, alertes admin).
+- **Blade Templates** : Moteur de templates PHP pour les vues (emails, pages web si nécessaire).
+- **Vite** : Outil de build moderne pour la compilation des assets JavaScript et CSS.
+- **Node.js & npm** : Pour la gestion des dépendances front-end et la compilation des assets.
+- **PHPUnit** : Framework de tests unitaires et fonctionnels pour assurer la qualité du code.
+- **Git** : Système de contrôle de version pour la gestion du code source.
+
+## Fonctionnalités principales
+
+- **Gestion des utilisateurs** : Authentification et autorisation avec des rôles (admin, utilisateur).
+- **Système de réservations** : Création, modification et suivi des réservations avec notifications automatiques.
+- **Gestion des albums** : Organisation hiérarchique des albums photo.
+- **Galerie d'images** : Upload, stockage et gestion des images associées aux albums.
+- **Panneau d'administration Filament** : Interface web pour la gestion des ressources sans code complexe.
+- **API RESTful** : Endpoints pour l'intégration avec des frontends externes ou des applications mobiles.
+- **Sécurité** : Protection contre les vulnérabilités communes (CSRF, XSS, injection SQL) via Laravel.
+- **Performance** : Cache, optimisation des requêtes et support des files d'attente pour les tâches lourdes.
 
 ## Installation
 
 ### Prérequis
 - PHP 8.1 ou supérieur
 - Composer
-- Node.js et npm (pour les assets)
-- Base de données (MySQL, PostgreSQL, etc.)
+- Node.js (version 16+) et npm
+- Serveur de base de données (MySQL 8.0+, PostgreSQL 13+, ou SQLite pour développement)
+- Git
 
 ### Étapes d'installation
 1. **Clonez le dépôt** :
    ```bash
-   git clone <url-du-depot>
+   git clone https://github.com/votre-utilisateur/thenella-backend.git
    cd thenella-backend
    ```
 
@@ -51,7 +65,10 @@ Thenella Backend est une application web développée avec Laravel, conçue pour
      ```bash
      cp .env.example .env
      ```
-   - Éditez `.env` pour configurer la base de données, le mail, etc.
+   - Éditez `.env` pour configurer :
+     - La base de données (DB_CONNECTION, DB_HOST, etc.)
+     - Le mail (MAIL_MAILER, MAIL_HOST, etc.)
+     - Les clés d'application (APP_KEY générée automatiquement)
 
 5. **Générez la clé d'application** :
    ```bash
@@ -63,7 +80,7 @@ Thenella Backend est une application web développée avec Laravel, conçue pour
    php artisan migrate
    ```
 
-7. **Seedez la base de données (optionnel)** :
+7. **Seedez la base de données (optionnel, pour données de test)** :
    ```bash
    php artisan db:seed
    ```
@@ -73,51 +90,55 @@ Thenella Backend est une application web développée avec Laravel, conçue pour
    npm run build
    ```
 
-9. **Démarrez le serveur** :
+9. **Démarrez le serveur de développement** :
    ```bash
    php artisan serve
    ```
 
-L'application sera accessible sur `http://localhost:8000`.
+L'application sera accessible sur `http://localhost:8000`. Le panneau d'administration Filament sur `/admin`.
 
 ## Utilisation
 
-### Panneau d'administration
-Accédez au panneau Filament via `/admin` (ou configurez la route dans `AdminPanelProvider.php`).
+### Développement
+- **Lancer les tests** : `php artisan test`
+- **Vider le cache** : `php artisan cache:clear`
+- **Compiler les assets en mode dev** : `npm run dev`
 
-### API
-Les routes API sont définies dans `routes/api.php`. Exemples :
-- `GET /api/bookings` : Liste des réservations.
-- `POST /api/bookings` : Créer une réservation.
-
-Utilisez des outils comme Postman pour tester les API.
-
-### Tests
-Exécutez les tests avec :
-```bash
-php artisan test
-```
+### Production
+- Configurez un serveur web (Apache/Nginx) avec PHP-FPM.
+- Utilisez des outils comme Laravel Envoy ou des services CI/CD pour le déploiement.
+- Assurez-vous que les permissions des dossiers `storage` et `bootstrap/cache` sont correctes.
 
 ## Structure du projet
-- `app/Models/` : Modèles Eloquent (User, Booking, Album, GalleryImage).
-- `app/Http/Controllers/` : Contrôleurs pour la logique métier.
-- `app/Mail/` : Classes pour les emails.
-- `database/migrations/` : Migrations de base de données.
-- `resources/views/` : Vues Blade (si utilisées).
-- `routes/` : Définition des routes web et API.
+```
+thenella-backend/
+├── app/                    # Code de l'application
+│   ├── Http/Controllers/   # Contrôleurs
+│   ├── Mail/               # Classes d'emails
+│   ├── Models/             # Modèles Eloquent
+│   └── Providers/          # Fournisseurs de services
+├── database/               # Migrations et seeders
+├── public/                 # Assets publics
+├── resources/              # Vues et assets
+├── routes/                 # Définition des routes
+├── tests/                  # Tests unitaires et fonctionnels
+├── composer.json           # Dépendances PHP
+├── package.json            # Dépendances JS
+└── README.md               # Ce fichier
+```
 
 ## Contribution
 1. Forkez le projet.
-2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/nouvelle-fonction`).
+2. Créez une branche feature (`git checkout -b feature/nouvelle-fonction`).
 3. Commitez vos changements (`git commit -am 'Ajoute nouvelle fonctionnalité'`).
-4. Pushez vers la branche (`git push origin feature/nouvelle-fonction`).
+4. Pushez (`git push origin feature/nouvelle-fonction`).
 5. Ouvrez une Pull Request.
 
 ## Licence
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+MIT License. Voir `LICENSE` pour plus de détails.
 
 ## Support
-Pour des questions ou des problèmes, ouvrez une issue sur GitHub ou contactez l'équipe de développement.
+Pour des questions, ouvrez une issue sur GitHub ou contactez l'équipe de développement.
 
 ## Contributing
 
